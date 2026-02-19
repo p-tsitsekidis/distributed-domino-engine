@@ -1,36 +1,50 @@
-# Event-Driven-Domino-Server
+# Distributed Domino Engine
 
-A concurrent, client-server implementation of the classic Domino game built in Java. This project demonstrates core distributed system concepts, featuring a custom event-driven network protocol, a centralized game state engine, and supports both command-line and JavaFX graphical clients.
+A concurrent, client-server implementation of the classic Domino game built in pure Java. 
 
-## Technical Highlights
-* **Client-Server Architecture:** Utilizes Java Sockets for low-latency, TCP-based communication between the centralized server and remote clients.
-* **Event-Driven Command Parsing:** Employs the Command Design Pattern (mapping string headers to method references via `HashMap<String, Runnable>`) to cleanly and asynchronously process incoming network events without heavily nested logic.
-* **Thread Safety & UI Separation:** Ensures responsive user interfaces by strictly separating background network listening threads from the JavaFX application thread using `Platform.runLater()`.
-* **Robust State Machine:** The `GameEngine` acts as the single source of truth. It enforces strict mathematical game rules, validates moves against a double-ended queue (`Deque<Tile>`) for $O(1)$ edge insertions, and automates stock drawing without relying on client-side trust.
+This project was built to demonstrate core distributed system concepts, avoiding high-level networking libraries in favor of raw Java Sockets. It features a custom event-driven network protocol, a centralized mathematical state engine, and thread-safe graphical/CLI clients.
 
-## Architecture Overview
+## Technical Architecture & Highlights
 
-The system is decoupled into three primary layers:
-1. **Game Engine (`gr.uop.GameEngine`)**: Pure Java logic handling the board state, tile validation, and scoring algorithms.
-2. **Server (`gr.uop.DominoServer`)**: Manages the socket lifecycle, handles dual-client I/O streams, and broadcasts game state updates.
-3. **Clients (`gr.uop.JavaFXClient` / `CommandLineClient`)**: Thin clients that parse server commands and render the state either via CLI or a JavaFX graphical interface.
+### 1. Event-Driven Network Protocol (Command Pattern)
+Instead of heavily nested `switch` statements, the system employs the **Command Design Pattern** to parse incoming network streams. 
+* String headers are mapped directly to method references via a `HashMap<String, Runnable>`.
+* This allows the client to asynchronously and cleanly process incoming state updates from the server without blocking.
+
+### 2. State Machine & Algorithmic Rigor
+The `GameEngine` acts as the single source of truth, eliminating client-side trust issues. 
+* **Data Structures:** Utilizes a double-ended queue (`Deque<Tile>`) to represent the line of play, allowing for highly efficient **O(1)** insertions at both edges of the board.
+* **Validation:** Enforces strict mathematical rules for tile placement, automated stock drawing, and win-condition calculations.
+
+### 3. Concurrency & UI Separation
+* Implements strict thread separation. Background threads handle blocking network I/O operations, ensuring the user interface remains responsive.
+* Utilizes `Platform.runLater()` to safely push state mutations from the network listening thread to the JavaFX application thread.
+
+## System Layers
+
+The architecture is strictly decoupled into three primary layers:
+1. **Game Engine (`gr.uop.GameEngine`):** Pure Java domain logic handling board state, permutations, and scoring. Zero network awareness.
+2. **Server (`gr.uop.DominoServer`):** Manages the TCP socket lifecycle, dual-client I/O streaming, and broadcasts game state mutations.
+3. **Clients (`gr.uop.JavaFXClient` / `CommandLineClient`):** Thin clients that maintain no local game logic; they simply parse server commands and render the state.
 
 ## Getting Started
 
 ### Prerequisites
-* Java Development Kit (JDK) 8+
-* JavaFX SDK (for the GUI client)
+* Java Development Kit (JDK) 8 or higher
+* JavaFX SDK (if running the GUI client)
 
-### Running the Game
+### Running the System
+
 1. **Start the Server:**
-   Compile and run `Server.java`. Choose either Local (CLI only) or Networked Server mode. By default, the server binds to port `7777`.
+   Compile and run `Server.java`. Choose either `Local` (CLI only) or `Networked Server` mode. The server binds to port `7777` by default.
 2. **Start the Clients:**
-   Run `JavaFXClient.java` (GUI) or `CommandLineClient.java` (CLI). Enter the server's IP address (`localhost` for local testing) when prompted.
+   Run `JavaFXClient.java` for the graphical interface, or `CommandLineClient.java` for the terminal interface. 
+3. **Connect:** Enter the server's IP address (use `localhost` for local testing) when prompted by the client.
 
-## Future Improvements
-While the current architecture is fully functional for local and low-latency network play, future iterations would focus on production-grade robustness:
-* **Serialization Migration:** Transitioning the custom space-separated string protocol to structured serialization (e.g., JSON via Jackson/Gson, or Google Protocol Buffers) for stricter type safety and easier extensibility.
-* **Robust Fault Tolerance:** Implementing heartbeat mechanisms and robust `try-catch` socket closure handling to gracefully recover from sudden client disconnections or network drops without crashing the server loop.
+## Future Roadmap
+
+* **Serialization Migration:** Transitioning the custom space-separated string protocol to structured serialization (e.g., JSON via Jackson, or Google Protocol Buffers) for stricter type safety.
+* **Fault Tolerance:** Implementing heartbeat mechanisms to gracefully recover from sudden client disconnects without crashing the server loop.
 
 ## Credits
 
