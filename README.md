@@ -1,8 +1,8 @@
 # Distributed Domino Engine
 
-A concurrent, client-server implementation of the classic Domino game built in pure Java. 
+A concurrent, client-server implementation of the classic Domino game built in pure Java.
 
-This project was built to demonstrate core distributed system concepts, avoiding high-level networking libraries in favor of raw Java Sockets. It features a custom event-driven network protocol, a centralized mathematical state engine, and thread-safe graphical/CLI clients.
+This project implements a real-time multiplayer game engine from the ground up using raw Java Sockets — no high-level networking libraries. It features a custom event-driven TCP protocol, a centralized authoritative game engine, and thread-safe graphical/CLI clients.
 
 ## Technical Architecture & Highlights
 
@@ -11,10 +11,10 @@ Instead of heavily nested `switch` statements, the system employs the **Command 
 * String headers are mapped directly to method references via a `HashMap<String, Runnable>`.
 * This allows the client to asynchronously and cleanly process incoming state updates from the server without blocking.
 
-### 2. State Machine & Algorithmic Rigor
+### 2. Authoritative State Engine & Algorithmic Design
 The `GameEngine` acts as the single source of truth, eliminating client-side trust issues. 
-* **Data Structures:** Utilizes a double-ended queue (`Deque<Tile>`) to represent the line of play, allowing for highly efficient **O(1)** insertions at both edges of the board.
-* **Validation:** Enforces strict mathematical rules for tile placement, automated stock drawing, and win-condition calculations.
+* **Data Structures:** Utilizes a double-ended queue (`Deque<Tile>`) to represent the line of play, allowing for **O(1)** insertions at both edges of the board.
+* **Validation:** Enforces strict rules for tile placement, automated stock drawing, and win-condition calculations.
 
 ### 3. Concurrency & UI Separation
 * Implements strict thread separation. Background threads handle blocking network I/O operations, ensuring the user interface remains responsive.
@@ -49,7 +49,6 @@ The architecture is strictly decoupled into three primary layers:
 ## Credits
 
 Special thanks to [Manos Schoinoplokakis](https://github.com/Manos1Dev) for providing the JavaFX implementation of the game. Their contribution was essential in building the graphical interface for this project.
-
 
 ## License
 
